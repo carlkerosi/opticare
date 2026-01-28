@@ -38,6 +38,7 @@ interface PatientFormData {
 }
 
 export default function NewPatient() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<PatientFormData>({
     firstName: "",
     lastName: "",
@@ -63,11 +64,13 @@ export default function NewPatient() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -76,36 +79,28 @@ export default function NewPatient() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Patient Data:", formData);
-    setSubmitted(true);
-    setTimeout(() => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      // Add patient to Firebase
+      await addPatient(formData);
+      setSubmitted(true);
+
+      // Redirect to dashboard after 2 seconds
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create patient record";
+      setError(errorMessage);
       setSubmitted(false);
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        age: "",
-        sex: "",
-        dateOfBirth: "",
-        address: "",
-        insurance: "",
-        problem: "",
-        rightSphere: "",
-        rightCylinder: "",
-        rightAxis: "",
-        rightAdd: "",
-        rightPD: "",
-        leftSphere: "",
-        leftCylinder: "",
-        leftAxis: "",
-        leftAdd: "",
-        leftPD: "",
-        notes: "",
-      });
-    }, 2000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -133,6 +128,16 @@ export default function NewPatient() {
           </p>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="text-red-600 mt-0.5" size={20} />
+            <div>
+              <h3 className="font-semibold text-red-900">Error</h3>
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          </div>
+        )}
+
         {submitted && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
             <div className="text-green-600 mt-0.5">
@@ -145,12 +150,10 @@ export default function NewPatient() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-green-900">
-                Patient record created successfully!
-              </h3>
+              <h3 className="font-semibold text-green-900">Success!</h3>
               <p className="text-sm text-green-800">
-                {formData.firstName} {formData.lastName} has been added to the
-                system.
+                {formData.firstName} {formData.lastName} has been added. Redirecting to
+                dashboard...
               </p>
             </div>
           </div>
@@ -578,10 +581,20 @@ export default function NewPatient() {
             </Link>
             <button
               type="submit"
-              className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+              disabled={isLoading}
+              className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus size={20} />
-              Create Patient
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-foreground border-t-transparent"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Plus size={20} />
+                  Create Patient
+                </>
+              )}
             </button>
           </div>
         </form>
