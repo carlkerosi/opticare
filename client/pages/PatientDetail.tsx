@@ -8,103 +8,89 @@ import {
   Calendar,
   Eye,
   FileText,
+  AlertCircle,
 } from "lucide-react";
-
-// Mock data - same as in Index
-const MOCK_PATIENTS = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    age: 34,
-    email: "sarah.johnson@email.com",
-    phone: "(555) 123-4567",
-    lastVisit: "2024-01-15",
-    prescription: "OD: -2.50, OS: -2.75",
-    nextAppointment: "2024-02-20",
-    status: "Active",
-    dob: "1990-03-15",
-    address: "123 Main St, Springfield, IL 62701",
-    insurance: "Blue Cross Blue Shield",
-    notes: "Patient has mild astigmatism. Prefers contact lenses.",
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    age: 52,
-    email: "m.chen@email.com",
-    phone: "(555) 234-5678",
-    lastVisit: "2024-01-22",
-    prescription: "OD: +1.25, OS: +1.00",
-    nextAppointment: "2024-03-10",
-    status: "Active",
-    dob: "1971-06-20",
-    address: "456 Oak Ave, Springfield, IL 62702",
-    insurance: "Aetna",
-    notes: "Presbyopia. Uses progressive lenses.",
-  },
-  {
-    id: 3,
-    name: "Emily Rodriguez",
-    age: 28,
-    email: "emily.r@email.com",
-    phone: "(555) 345-6789",
-    lastVisit: "2024-01-10",
-    prescription: "OD: -3.00, OS: -2.50",
-    nextAppointment: "2024-02-15",
-    status: "Pending Review",
-    dob: "1995-11-08",
-    address: "789 Pine Rd, Springfield, IL 62703",
-    insurance: "UnitedHealthcare",
-    notes: "Recent prescription change. Monitor for any discomfort.",
-  },
-  {
-    id: 4,
-    name: "Robert Williams",
-    age: 67,
-    email: "r.williams@email.com",
-    phone: "(555) 456-7890",
-    lastVisit: "2024-01-05",
-    prescription: "OD: +2.50, OS: +2.75",
-    nextAppointment: "2024-03-05",
-    status: "Active",
-    dob: "1956-08-12",
-    address: "321 Maple Dr, Springfield, IL 62704",
-    insurance: "Medicare",
-    notes: "Bifocal prescription. Annual checkup recommended.",
-  },
-  {
-    id: 5,
-    name: "Jessica Lee",
-    age: 41,
-    email: "j.lee@email.com",
-    phone: "(555) 567-8901",
-    lastVisit: "2023-12-20",
-    prescription: "OD: -1.75, OS: -1.50",
-    nextAppointment: "2024-02-28",
-    status: "Active",
-    dob: "1982-09-25",
-    address: "654 Elm St, Springfield, IL 62705",
-    insurance: "Cigna",
-    notes: "Occasional dry eyes. Recommended artificial tears.",
-  },
-];
+import { useState, useEffect } from "react";
+import { getPatientById, PatientData } from "@/services/patientService";
 
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const patient = MOCK_PATIENTS.find((p) => p.id === parseInt(id || "0"));
+  const [patient, setPatient] = useState<PatientData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!patient) {
+  useEffect(() => {
+    const fetchPatient = async () => {
+      if (!id) {
+        setError("No patient ID provided");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getPatientById(id);
+        if (data) {
+          setPatient(data);
+        } else {
+          setError("Patient not found");
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load patient";
+        setError(errorMessage);
+        console.error("Error fetching patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatient();
+  }, [id]);
+
+  if (loading) {
     return (
       <Layout>
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Patient not found</p>
-          <Link
-            to="/"
-            className="text-primary hover:underline mt-4 inline-block"
+          <div className="inline-flex items-center gap-2">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
+            <p className="text-muted-foreground">Loading patient...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !patient) {
+    return (
+      <Layout>
+        <div className="space-y-4">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
           >
+            <ArrowLeft size={20} />
             Back to Dashboard
-          </Link>
+          </button>
+
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-start gap-4">
+            <AlertCircle className="text-red-600 mt-1" size={24} />
+            <div>
+              <h2 className="text-lg font-semibold text-red-900 mb-2">
+                Error Loading Patient
+              </h2>
+              <p className="text-sm text-red-800 mb-4">{error || "Patient not found"}</p>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+              >
+                <ArrowLeft size={16} />
+                Back to Dashboard
+              </Link>
+            </div>
+          </div>
         </div>
       </Layout>
     );
@@ -133,11 +119,9 @@ export default function PatientDetail() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-4xl font-bold text-foreground">
-                {patient.name}
+                {patient.firstName} {patient.lastName}
               </h1>
-              <p className="text-muted-foreground mt-2">
-                Age: {patient.age} years old
-              </p>
+              <p className="text-muted-foreground mt-2">Age: {patient.age} years old</p>
               <div className="mt-4 flex gap-4">
                 <a
                   href={`tel:${patient.phone}`}
@@ -155,14 +139,8 @@ export default function PatientDetail() {
                 </a>
               </div>
             </div>
-            <span
-              className={`text-sm font-semibold px-3 py-1.5 rounded-full ${
-                patient.status === "Active"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
-            >
-              {patient.status}
+            <span className="text-sm font-semibold px-3 py-1.5 rounded-full bg-green-100 text-green-800">
+              Active
             </span>
           </div>
         </div>
@@ -181,28 +159,20 @@ export default function PatientDetail() {
                 <div>
                   <p className="text-sm text-muted-foreground">Date of Birth</p>
                   <p className="text-foreground font-medium mt-1">
-                    {patient.dob}
+                    {patient.dateOfBirth}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Age</p>
-                  <p className="text-foreground font-medium mt-1">
-                    {patient.age} years
-                  </p>
+                  <p className="text-foreground font-medium mt-1">{patient.age} years</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-sm text-muted-foreground">Address</p>
-                  <p className="text-foreground font-medium mt-1">
-                    {patient.address}
-                  </p>
+                  <p className="text-foreground font-medium mt-1">{patient.address}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-sm text-muted-foreground">
-                    Insurance Provider
-                  </p>
-                  <p className="text-foreground font-medium mt-1">
-                    {patient.insurance}
-                  </p>
+                  <p className="text-sm text-muted-foreground">Insurance Provider</p>
+                  <p className="text-foreground font-medium mt-1">{patient.insurance}</p>
                 </div>
               </div>
             </div>
@@ -213,30 +183,85 @@ export default function PatientDetail() {
                 <Eye size={20} className="text-secondary" />
                 Current Prescription
               </h2>
-              <div className="bg-secondary/5 border border-secondary/20 rounded-lg p-6">
-                <div className="grid grid-cols-2 gap-8 text-center">
-                  <div>
-                    <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      Right Eye (OD)
-                    </p>
-                    <p className="text-2xl font-mono font-bold text-foreground mt-3">
-                      {patient.prescription.split(",")[0].trim().split(": ")[1]}
-                    </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Right Eye */}
+                <div className="bg-secondary/5 border border-secondary/20 rounded-lg p-6">
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Right Eye (OD)
+                  </p>
+                  <div className="space-y-2 text-sm font-mono">
+                    <div>
+                      <span className="text-muted-foreground">SPH:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.rightSphere || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">CYL:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.rightCylinder || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">AXIS:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.rightAxis || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">ADD:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.rightAdd || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">PD:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.rightPD || "-"}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      Left Eye (OS)
-                    </p>
-                    <p className="text-2xl font-mono font-bold text-foreground mt-3">
-                      {patient.prescription.split(",")[1].trim().split(": ")[1]}
-                    </p>
+                </div>
+
+                {/* Left Eye */}
+                <div className="bg-secondary/5 border border-secondary/20 rounded-lg p-6">
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Left Eye (OS)
+                  </p>
+                  <div className="space-y-2 text-sm font-mono">
+                    <div>
+                      <span className="text-muted-foreground">SPH:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.leftSphere || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">CYL:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.leftCylinder || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">AXIS:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.leftAxis || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">ADD:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.leftAdd || "-"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">PD:</span>{" "}
+                      <span className="font-bold text-foreground">
+                        {patient.leftPD || "-"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-4">
-                Last prescribed:{" "}
-                {new Date(patient.lastVisit).toLocaleDateString()}
-              </p>
             </div>
 
             {/* Clinical Notes */}
@@ -244,61 +269,21 @@ export default function PatientDetail() {
               <h2 className="text-lg font-semibold text-foreground mb-4">
                 Clinical Notes
               </h2>
-              <p className="text-foreground leading-relaxed">{patient.notes}</p>
+              <p className="text-foreground leading-relaxed">
+                {patient.notes || "No clinical notes available"}
+              </p>
             </div>
           </div>
 
-          {/* Right Column - Appointments & Quick Actions */}
+          {/* Right Column - Info & Actions */}
           <div className="space-y-6">
-            {/* Next Appointment */}
-            <div className="bg-gradient-to-br from-secondary/10 to-accent/10 border border-secondary/30 rounded-xl p-6">
+            {/* Problem/Complaint */}
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/30 rounded-xl p-6">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Next Appointment
+                Chief Complaint
               </h3>
-              <div className="flex items-center gap-3 mb-4">
-                <Calendar size={24} className="text-secondary" />
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {new Date(patient.nextAppointment).toLocaleDateString(
-                      "en-US",
-                      {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      },
-                    )}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(patient.nextAppointment).toLocaleDateString(
-                      "en-US",
-                      {
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )}
-                  </p>
-                </div>
-              </div>
-              <button className="w-full bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors font-medium">
-                Reschedule
-              </button>
-            </div>
-
-            {/* Last Visit */}
-            <div className="bg-card border border-border rounded-xl p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Last Visit
-              </h3>
-              <p className="text-xl font-bold text-foreground">
-                {new Date(patient.lastVisit).toLocaleDateString()}
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                {Math.floor(
-                  (Date.now() - new Date(patient.lastVisit).getTime()) /
-                    (1000 * 60 * 60 * 24),
-                )}{" "}
-                days ago
+              <p className="text-foreground leading-relaxed">
+                {patient.problem || "No chief complaint recorded"}
               </p>
             </div>
 
