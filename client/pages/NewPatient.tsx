@@ -364,6 +364,55 @@ export default function NewPatient() {
             </div>
           </div>
 
+          {/* Patient History Section */}
+          <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <div className="bg-secondary/10 p-2 rounded-lg">
+                <svg
+                  className="w-5 h-5 text-secondary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              Patient History
+            </h2>
+
+            <p className="text-sm text-muted-foreground">
+              Select any relevant patient history items
+            </p>
+
+            <div className="space-y-3">
+              {[
+                { label: "PM hx", value: "PM hx" },
+                { label: "PO hx", value: "PO hx" },
+                { label: "VDU (Visual Display Unit)", value: "VDU" },
+                { label: "Strabismus (Eye Alignment Issue)", value: "Strabismus" },
+                { label: "NPC (Near Point of Convergence)", value: "NPC" },
+              ].map((item) => (
+                <label
+                  key={item.value}
+                  className="flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.patientHistory.includes(item.value)}
+                    onChange={() => handleHistoryToggle(item.value)}
+                    className="w-4 h-4 rounded border-border cursor-pointer accent-primary"
+                  />
+                  <span className="text-foreground font-medium">{item.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Eye Measurements Section */}
           <div className="bg-card border border-border rounded-xl p-6 space-y-6">
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
