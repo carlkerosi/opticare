@@ -53,6 +53,7 @@ export default function NewPatient() {
     address: "",
     insurance: "",
     problem: "",
+    patientHistory: [],
     rightSphere: "",
     rightCylinder: "",
     rightAxis: "",
