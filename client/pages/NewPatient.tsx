@@ -83,6 +83,15 @@ export default function NewPatient() {
     }));
   };
 
+  const handleHistoryToggle = (historyItem: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      patientHistory: prev.patientHistory.includes(historyItem)
+        ? prev.patientHistory.filter((item) => item !== historyItem)
+        : [...prev.patientHistory, historyItem],
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
