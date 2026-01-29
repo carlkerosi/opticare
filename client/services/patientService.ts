@@ -25,6 +25,7 @@ export interface PatientData {
   address: string;
   insurance: string;
   problem: string;
+  patientHistory?: string[];
   rightSphere: string;
   rightCylinder: string;
   rightAxis: string;
