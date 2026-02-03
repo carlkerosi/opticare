@@ -66,7 +66,11 @@ export default function Appointments() {
         }
       } catch (err) {
         // Gracefully handle AbortError
-        if (err instanceof Error && (err.message.includes("AbortError") || err.message.includes("aborted"))) {
+        if (
+          err instanceof Error &&
+          (err.message.includes("AbortError") ||
+            err.message.includes("aborted"))
+        ) {
           console.debug("Patients fetch cancelled - component unmounted");
           return;
         }
@@ -146,7 +150,7 @@ export default function Appointments() {
   // Handle appointment status change
   const handleStatusChange = (id: string, status: Appointment["status"]) => {
     const updated = appointments.map((apt) =>
-      apt.id === id ? { ...apt, status } : apt
+      apt.id === id ? { ...apt, status } : apt,
     );
     saveAppointments(updated);
   };
@@ -176,9 +180,7 @@ export default function Appointments() {
       const today = new Date();
       const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
       return (
-        aptDate >= today &&
-        aptDate <= weekFromNow &&
-        apt.status === "scheduled"
+        aptDate >= today && aptDate <= weekFromNow && apt.status === "scheduled"
       );
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -206,10 +208,10 @@ export default function Appointments() {
   const getAppointmentsForDate = (day: number | null) => {
     if (!day) return [];
     const dateStr = `${currentMonth.getFullYear()}-${String(
-      currentMonth.getMonth() + 1
+      currentMonth.getMonth() + 1,
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return appointments.filter(
-      (apt) => apt.date === dateStr && apt.status === "scheduled"
+      (apt) => apt.date === dateStr && apt.status === "scheduled",
     );
   };
 
@@ -277,7 +279,9 @@ export default function Appointments() {
                   <button
                     onClick={() =>
                       setCurrentMonth(
-                        new Date(currentMonth.setMonth(currentMonth.getMonth() - 1))
+                        new Date(
+                          currentMonth.setMonth(currentMonth.getMonth() - 1),
+                        ),
                       )
                     }
                     className="p-1.5 hover:bg-muted rounded transition-colors"
@@ -287,7 +291,9 @@ export default function Appointments() {
                   <button
                     onClick={() =>
                       setCurrentMonth(
-                        new Date(currentMonth.setMonth(currentMonth.getMonth() + 1))
+                        new Date(
+                          currentMonth.setMonth(currentMonth.getMonth() + 1),
+                        ),
                       )
                     }
                     className="p-1.5 hover:bg-muted rounded transition-colors"
@@ -317,7 +323,7 @@ export default function Appointments() {
                       new Date(
                         currentMonth.getFullYear(),
                         currentMonth.getMonth(),
-                        day
+                        day,
                       ).toDateString();
 
                   return (
@@ -380,7 +386,7 @@ export default function Appointments() {
                     >
                       {status.charAt(0).toUpperCase() + status.slice(1)}
                     </button>
-                  )
+                  ),
                 )}
               </div>
             </div>
@@ -434,7 +440,7 @@ export default function Appointments() {
                                 weekday: "short",
                                 month: "short",
                                 day: "numeric",
-                              }
+                              },
                             )}
                           </div>
                           <div className="flex items-center gap-2">
@@ -479,7 +485,9 @@ export default function Appointments() {
                           </>
                         )}
                         <button
-                          onClick={() => handleDeleteAppointment(appointment.id)}
+                          onClick={() =>
+                            handleDeleteAppointment(appointment.id)
+                          }
                           className="p-2 hover:bg-red-100 text-red-600 rounded transition-colors"
                           title="Delete appointment"
                         >

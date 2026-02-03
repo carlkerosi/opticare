@@ -74,7 +74,11 @@ export default function PatientDetail() {
       } catch (err) {
         if (isMounted) {
           // Gracefully handle AbortError
-          if (err instanceof Error && (err.message.includes("AbortError") || err.message.includes("aborted"))) {
+          if (
+            err instanceof Error &&
+            (err.message.includes("AbortError") ||
+              err.message.includes("aborted"))
+          ) {
             console.debug("Patient fetch cancelled - component unmounted");
             return;
           }
@@ -200,7 +204,7 @@ export default function PatientDetail() {
       return;
     }
     alert(
-      `Appointment scheduled for ${appointmentData.date} at ${appointmentData.time}`
+      `Appointment scheduled for ${appointmentData.date} at ${appointmentData.time}`,
     );
     setShowScheduleModal(false);
     setAppointmentData({ date: "", time: "", notes: "" });
@@ -617,7 +621,9 @@ export default function PatientDetail() {
             <div className="space-y-6">
               {/* Right Eye */}
               <div className="space-y-3">
-                <h4 className="font-semibold text-foreground">Right Eye (OD)</h4>
+                <h4 className="font-semibold text-foreground">
+                  Right Eye (OD)
+                </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">

@@ -54,7 +54,11 @@ export default function Index() {
       } catch (err) {
         if (isMounted) {
           // Gracefully handle AbortError
-          if (err instanceof Error && (err.message.includes("AbortError") || err.message.includes("aborted"))) {
+          if (
+            err instanceof Error &&
+            (err.message.includes("AbortError") ||
+              err.message.includes("aborted"))
+          ) {
             console.debug("Patient fetch cancelled - component unmounted");
             return;
           }
@@ -113,7 +117,7 @@ export default function Index() {
     }
     // In a real app, this would save to Firebase
     alert(
-      `Appointment scheduled for ${appointmentData.date} at ${appointmentData.time}`
+      `Appointment scheduled for ${appointmentData.date} at ${appointmentData.time}`,
     );
     setShowScheduleModal(false);
     setAppointmentData({ date: "", time: "", notes: "" });

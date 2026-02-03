@@ -33,7 +33,11 @@ export default function Reports() {
         }
       } catch (err) {
         // Gracefully handle AbortError
-        if (err instanceof Error && (err.message.includes("AbortError") || err.message.includes("aborted"))) {
+        if (
+          err instanceof Error &&
+          (err.message.includes("AbortError") ||
+            err.message.includes("aborted"))
+        ) {
           console.debug("Report fetch cancelled - component unmounted");
           return;
         }
@@ -70,12 +74,12 @@ export default function Reports() {
         patients.length > 0
           ? Math.round(
               patients.reduce((sum, p) => sum + parseInt(p.age || "0"), 0) /
-                patients.length
+                patients.length,
             )
           : 0,
       withRefractiveLens: patients.filter((p) => p.rightSphere).length,
       withAstigmatism: patients.filter(
-        (p) => p.rightCylinder && p.rightCylinder !== "0"
+        (p) => p.rightCylinder && p.rightCylinder !== "0",
       ).length,
       withAddition: patients.filter((p) => p.rightAdd && p.rightAdd !== "0")
         .length,
@@ -88,7 +92,10 @@ export default function Reports() {
   // Handle exporting report
   const handleExportReport = () => {
     const csv = generateReportCSV();
-    downloadCSV(csv, `opticare-report-${new Date().toISOString().split('T')[0]}.csv`);
+    downloadCSV(
+      csv,
+      `opticare-report-${new Date().toISOString().split("T")[0]}.csv`,
+    );
   };
 
   // Generate CSV report
@@ -109,9 +116,27 @@ export default function Reports() {
       [],
       ["GENDER DISTRIBUTION"],
       ["Gender", "Count", "Percentage"],
-      ["Male", stats.malePatients, stats.totalPatients > 0 ? `${Math.round((stats.malePatients / stats.totalPatients) * 100)}%` : "0%"],
-      ["Female", stats.femalePatients, stats.totalPatients > 0 ? `${Math.round((stats.femalePatients / stats.totalPatients) * 100)}%` : "0%"],
-      ["Other", stats.otherPatients, stats.totalPatients > 0 ? `${Math.round((stats.otherPatients / stats.totalPatients) * 100)}%` : "0%"],
+      [
+        "Male",
+        stats.malePatients,
+        stats.totalPatients > 0
+          ? `${Math.round((stats.malePatients / stats.totalPatients) * 100)}%`
+          : "0%",
+      ],
+      [
+        "Female",
+        stats.femalePatients,
+        stats.totalPatients > 0
+          ? `${Math.round((stats.femalePatients / stats.totalPatients) * 100)}%`
+          : "0%",
+      ],
+      [
+        "Other",
+        stats.otherPatients,
+        stats.totalPatients > 0
+          ? `${Math.round((stats.otherPatients / stats.totalPatients) * 100)}%`
+          : "0%",
+      ],
       [],
       ["AGE DISTRIBUTION"],
       ["Age Range", "Count"],
@@ -128,7 +153,9 @@ export default function Reports() {
       ["Presbyopia (Addition)", stats.withAddition],
     ];
 
-    return rows.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+    return rows
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
   };
 
   // Download CSV file
@@ -174,7 +201,13 @@ export default function Reports() {
   };
 
   // Simple pie chart component using CSS
-  const PieChart = ({ data, title }: { data: Record<string, number>; title: string }) => {
+  const PieChart = ({
+    data,
+    title,
+  }: {
+    data: Record<string, number>;
+    title: string;
+  }) => {
     const total = Object.values(data).reduce((a, b) => a + b, 0);
     const colors = ["#2563eb", "#059669", "#9333ea"];
     let cumulativePercent = 0;
@@ -203,8 +236,7 @@ export default function Reports() {
               {slices.map((slice, index) => {
                 const radius = 60;
                 const circumference = 2 * Math.PI * radius;
-                const offset =
-                  (circumference * (100 - slice.endPercent)) / 100;
+                const offset = (circumference * (100 - slice.endPercent)) / 100;
 
                 return (
                   <circle
@@ -216,7 +248,9 @@ export default function Reports() {
                     stroke={slice.color}
                     strokeWidth="20"
                     strokeDasharray={
-                      (circumference * slice.percent) / 100 + " " + circumference
+                      (circumference * slice.percent) / 100 +
+                      " " +
+                      circumference
                     }
                     strokeDashoffset={offset}
                     transform={`rotate(${slice.startPercent * 3.6} 75 75)`}
@@ -261,7 +295,13 @@ export default function Reports() {
   };
 
   // Bar chart component
-  const BarChart = ({ data, title }: { data: Record<string, number>; title: string }) => {
+  const BarChart = ({
+    data,
+    title,
+  }: {
+    data: Record<string, number>;
+    title: string;
+  }) => {
     const maxValue = Math.max(...Object.values(data), 1);
     const colors = ["#2563eb", "#059669", "#9333ea", "#dc2626", "#ea580c"];
 
@@ -392,16 +432,10 @@ export default function Reports() {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Gender Distribution */}
-          <PieChart
-            data={genderData}
-            title="Patient Distribution by Gender"
-          />
+          <PieChart data={genderData} title="Patient Distribution by Gender" />
 
           {/* Age Distribution */}
-          <BarChart
-            data={ageDistribution}
-            title="Patients by Age Group"
-          />
+          <BarChart data={ageDistribution} title="Patients by Age Group" />
         </div>
 
         {/* Additional Statistics */}
@@ -428,9 +462,7 @@ export default function Reports() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-foreground">
-                      Presbyopia
-                    </span>
+                    <span className="text-sm text-foreground">Presbyopia</span>
                     <span className="font-bold text-foreground">
                       {stats.withAddition}
                     </span>
@@ -453,7 +485,7 @@ export default function Reports() {
                       {stats.malePatients} (
                       {stats.totalPatients > 0
                         ? Math.round(
-                            (stats.malePatients / stats.totalPatients) * 100
+                            (stats.malePatients / stats.totalPatients) * 100,
                           )
                         : 0}
                       %)
@@ -465,7 +497,7 @@ export default function Reports() {
                       {stats.femalePatients} (
                       {stats.totalPatients > 0
                         ? Math.round(
-                            (stats.femalePatients / stats.totalPatients) * 100
+                            (stats.femalePatients / stats.totalPatients) * 100,
                           )
                         : 0}
                       %)

@@ -57,7 +57,10 @@ export async function addPatient(patientData: PatientData): Promise<string> {
   } catch (error) {
     // Improve error messaging
     if (error instanceof Error) {
-      if (error.message.includes("AbortError") || error.message.includes("aborted")) {
+      if (
+        error.message.includes("AbortError") ||
+        error.message.includes("aborted")
+      ) {
         console.debug("Request was cancelled");
         throw new Error("Request was interrupted. Please try again.");
       }
@@ -82,32 +85,35 @@ export async function getAllPatients(): Promise<PatientData[]> {
 
     // Create a promise that rejects after 15 seconds
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error("Firestore request timeout")),
-        15000
-      )
+      setTimeout(() => reject(new Error("Firestore request timeout")), 15000),
     );
 
-    const querySnapshot = await Promise.race([
+    const querySnapshot = (await Promise.race([
       docsPromise,
       timeoutPromise,
-    ]) as any;
+    ])) as any;
 
-    return querySnapshot.docs.map((doc: any) => ({
-      id: doc.id,
-      ...doc.data(),
-    } as PatientData));
+    return querySnapshot.docs.map(
+      (doc: any) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        }) as PatientData,
+    );
   } catch (error) {
     // Ignore AbortError - it means the component was unmounted
     if (error instanceof Error) {
-      if (error.message.includes("AbortError") || error.message.includes("aborted")) {
+      if (
+        error.message.includes("AbortError") ||
+        error.message.includes("aborted")
+      ) {
         console.debug("Request was cancelled - component likely unmounted");
         return [];
       }
       if (error.message === "Firestore request timeout") {
         console.error("Firestore request timed out");
         throw new Error(
-          "Failed to load patients. Please check your internet connection and try again."
+          "Failed to load patients. Please check your internet connection and try again.",
         );
       }
     }
@@ -119,7 +125,9 @@ export async function getAllPatients(): Promise<PatientData[]> {
 /**
  * Get a single patient by ID
  */
-export async function getPatientById(patientId: string): Promise<PatientData | null> {
+export async function getPatientById(
+  patientId: string,
+): Promise<PatientData | null> {
   try {
     const docRef = doc(db, PATIENTS_COLLECTION, patientId);
     const docSnap = await getDoc(docRef);
@@ -135,7 +143,10 @@ export async function getPatientById(patientId: string): Promise<PatientData | n
   } catch (error) {
     // Ignore AbortError - it means the component was unmounted
     if (error instanceof Error) {
-      if (error.message.includes("AbortError") || error.message.includes("aborted")) {
+      if (
+        error.message.includes("AbortError") ||
+        error.message.includes("aborted")
+      ) {
         console.debug("Request was cancelled - component likely unmounted");
         return null;
       }
@@ -148,24 +159,27 @@ export async function getPatientById(patientId: string): Promise<PatientData | n
 /**
  * Search patients by name or email
  */
-export async function searchPatients(searchTerm: string): Promise<PatientData[]> {
+export async function searchPatients(
+  searchTerm: string,
+): Promise<PatientData[]> {
   try {
     const lowerSearchTerm = searchTerm.toLowerCase();
-    const querySnapshot = await getDocs(
-      collection(db, PATIENTS_COLLECTION)
-    );
-    
+    const querySnapshot = await getDocs(collection(db, PATIENTS_COLLECTION));
+
     return querySnapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as PatientData))
+      .map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as PatientData,
+      )
       .filter(
         (patient) =>
           patient.firstName.toLowerCase().includes(lowerSearchTerm) ||
           patient.lastName.toLowerCase().includes(lowerSearchTerm) ||
           patient.email.toLowerCase().includes(lowerSearchTerm) ||
-          patient.phone.includes(searchTerm)
+          patient.phone.includes(searchTerm),
       );
   } catch (error) {
     console.error("Error searching patients:", error);
@@ -178,7 +192,7 @@ export async function searchPatients(searchTerm: string): Promise<PatientData[]>
  */
 export async function updatePatient(
   patientId: string,
-  patientData: Partial<PatientData>
+  patientData: Partial<PatientData>,
 ): Promise<void> {
   try {
     const docRef = doc(db, PATIENTS_COLLECTION, patientId);

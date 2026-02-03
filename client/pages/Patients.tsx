@@ -31,7 +31,11 @@ export default function Patients() {
       } catch (err) {
         if (isMounted) {
           // Gracefully handle AbortError
-          if (err instanceof Error && (err.message.includes("AbortError") || err.message.includes("aborted"))) {
+          if (
+            err instanceof Error &&
+            (err.message.includes("AbortError") ||
+              err.message.includes("aborted"))
+          ) {
             console.debug("Patient fetch cancelled - component unmounted");
             return;
           }
