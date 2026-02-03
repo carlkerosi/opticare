@@ -23,6 +23,14 @@ export default function Index() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
     null,
   );
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+  const [appointmentData, setAppointmentData] = useState({
+    date: "",
+    time: "",
+    notes: "",
+  });
+  const [patientNotes, setPatientNotes] = useState("");
 
   // Fetch patients from Firebase on component mount
   useEffect(() => {
