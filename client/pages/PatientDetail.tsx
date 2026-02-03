@@ -105,6 +105,134 @@ export default function PatientDetail() {
     };
   }, [id]);
 
+  // Handle printing patient record
+  const handlePrintRecord = () => {
+    if (!patient) return;
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const prescriptionData = `
+      Right Eye (OD):
+      Sphere: ${patient.rightSphere || "N/A"}
+      Cylinder: ${patient.rightCylinder || "N/A"}
+      Axis: ${patient.rightAxis || "N/A"}
+      Add: ${patient.rightAdd || "N/A"}
+      PD: ${patient.rightPD || "N/A"}
+
+      Left Eye (OS):
+      Sphere: ${patient.leftSphere || "N/A"}
+      Cylinder: ${patient.leftCylinder || "N/A"}
+      Axis: ${patient.leftAxis || "N/A"}
+      Add: ${patient.leftAdd || "N/A"}
+      PD: ${patient.leftPD || "N/A"}
+    `;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Patient Record - ${patient.firstName} ${patient.lastName}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+          .header { border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .header p { margin: 5px 0; color: #666; }
+          .section { margin-bottom: 25px; page-break-inside: avoid; }
+          .section-title { font-weight: bold; font-size: 16px; margin-bottom: 12px; background-color: #f0f0f0; padding: 10px; border-left: 4px solid #2563eb; }
+          .field { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+          .label { font-weight: bold; color: #333; }
+          .value { color: #666; }
+          pre { white-space: pre-wrap; word-wrap: break-word; font-size: 12px; }
+          .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ccc; text-align: center; color: #999; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Patient Record</h1>
+          <p><strong>OptiCare</strong> - Optician Management System</p>
+          <p>Generated on ${new Date().toLocaleString()}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Personal Information</div>
+          <div class="field"><span class="label">Name:</span> <span class="value">${patient.firstName} ${patient.lastName}</span></div>
+          <div class="field"><span class="label">Age:</span> <span class="value">${patient.age} years</span></div>
+          <div class="field"><span class="label">Date of Birth:</span> <span class="value">${patient.dateOfBirth}</span></div>
+          <div class="field"><span class="label">Sex:</span> <span class="value">${patient.sex}</span></div>
+          <div class="field"><span class="label">Email:</span> <span class="value">${patient.email}</span></div>
+          <div class="field"><span class="label">Phone:</span> <span class="value">${patient.phone}</span></div>
+          <div class="field"><span class="label">Address:</span> <span class="value">${patient.address || "N/A"}</span></div>
+          <div class="field"><span class="label">Insurance:</span> <span class="value">${patient.insurance || "N/A"}</span></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Chief Complaint</div>
+          <p>${patient.problem || "N/A"}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Current Prescription</div>
+          <pre>${prescriptionData}</pre>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Clinical Notes</div>
+          <p>${patient.notes || "N/A"}</p>
+        </div>
+
+        <div class="footer">
+          <p>This is a confidential patient record. Do not share without authorization.</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 250);
+  };
+
+  // Handle scheduling appointment
+  const handleScheduleAppointment = () => {
+    if (!appointmentData.date || !appointmentData.time) {
+      alert("Please fill in date and time");
+      return;
+    }
+    alert(
+      `Appointment scheduled for ${appointmentData.date} at ${appointmentData.time}`
+    );
+    setShowScheduleModal(false);
+    setAppointmentData({ date: "", time: "", notes: "" });
+  };
+
+  // Handle updating prescription
+  const handleUpdatePrescription = () => {
+    if (
+      !prescriptionData.rightSphere &&
+      !prescriptionData.leftSphere &&
+      !prescriptionData.rightCylinder &&
+      !prescriptionData.leftCylinder
+    ) {
+      alert("Please enter at least some prescription values");
+      return;
+    }
+    alert("Prescription updated successfully!");
+    setShowPrescriptionModal(false);
+    setPrescriptionData({
+      rightSphere: "",
+      rightCylinder: "",
+      rightAxis: "",
+      rightAdd: "",
+      rightPD: "",
+      leftSphere: "",
+      leftCylinder: "",
+      leftAxis: "",
+      leftAdd: "",
+      leftPD: "",
+    });
+  };
+
   if (loading) {
     return (
       <Layout>
