@@ -487,13 +487,22 @@ export default function PatientDetail() {
               <h3 className="text-sm font-semibold text-foreground mb-4">
                 Quick Actions
               </h3>
-              <button className="w-full text-left px-4 py-2.5 rounded-lg bg-primary/5 text-primary hover:bg-primary/10 transition-colors text-sm font-medium">
+              <button
+                onClick={() => setShowScheduleModal(true)}
+                className="w-full text-left px-4 py-2.5 rounded-lg bg-primary/5 text-primary hover:bg-primary/10 transition-colors text-sm font-medium"
+              >
                 Schedule Appointment
               </button>
-              <button className="w-full text-left px-4 py-2.5 rounded-lg bg-secondary/5 text-secondary hover:bg-secondary/10 transition-colors text-sm font-medium">
+              <button
+                onClick={() => setShowPrescriptionModal(true)}
+                className="w-full text-left px-4 py-2.5 rounded-lg bg-secondary/5 text-secondary hover:bg-secondary/10 transition-colors text-sm font-medium"
+              >
                 Add Prescription
               </button>
-              <button className="w-full text-left px-4 py-2.5 rounded-lg bg-accent/5 text-accent hover:bg-accent/10 transition-colors text-sm font-medium">
+              <button
+                onClick={handlePrintRecord}
+                className="w-full text-left px-4 py-2.5 rounded-lg bg-accent/5 text-accent hover:bg-accent/10 transition-colors text-sm font-medium"
+              >
                 Print Record
               </button>
             </div>
