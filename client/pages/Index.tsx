@@ -87,6 +87,99 @@ export default function Index() {
   // Get patient status (placeholder - in real app would track last visit)
   const getPatientStatus = () => "Active";
 
+  // Handle appointment scheduling
+  const handleScheduleAppointment = () => {
+    if (!appointmentData.date || !appointmentData.time) {
+      alert("Please fill in all appointment fields");
+      return;
+    }
+    // In a real app, this would save to Firebase
+    alert(
+      `Appointment scheduled for ${appointmentData.date} at ${appointmentData.time}`
+    );
+    setShowScheduleModal(false);
+    setAppointmentData({ date: "", time: "", notes: "" });
+  };
+
+  // Handle printing patient record
+  const handlePrintRecord = () => {
+    if (!selectedPatient) return;
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const prescriptionData = `
+      Right Eye (OD):
+      Sphere: ${selectedPatient.rightSphere || "N/A"}
+      Cylinder: ${selectedPatient.rightCylinder || "N/A"}
+      Axis: ${selectedPatient.rightAxis || "N/A"}
+      Add: ${selectedPatient.rightAdd || "N/A"}
+      PD: ${selectedPatient.rightPD || "N/A"}
+
+      Left Eye (OS):
+      Sphere: ${selectedPatient.leftSphere || "N/A"}
+      Cylinder: ${selectedPatient.leftCylinder || "N/A"}
+      Axis: ${selectedPatient.leftAxis || "N/A"}
+      Add: ${selectedPatient.leftAdd || "N/A"}
+      PD: ${selectedPatient.leftPD || "N/A"}
+    `;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Patient Record - ${selectedPatient.firstName} ${selectedPatient.lastName}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+          .section { margin-bottom: 20px; }
+          .section-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; background-color: #f0f0f0; padding: 8px; }
+          .field { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
+          .label { font-weight: bold; }
+          pre { white-space: pre-wrap; word-wrap: break-word; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>OptiCare - Patient Record</h1>
+          <p>Generated on ${new Date().toLocaleString()}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Personal Information</div>
+          <div class="field"><span class="label">Name:</span> <span>${selectedPatient.firstName} ${selectedPatient.lastName}</span></div>
+          <div class="field"><span class="label">Age:</span> <span>${selectedPatient.age}</span></div>
+          <div class="field"><span class="label">Sex:</span> <span>${selectedPatient.sex}</span></div>
+          <div class="field"><span class="label">Email:</span> <span>${selectedPatient.email}</span></div>
+          <div class="field"><span class="label">Phone:</span> <span>${selectedPatient.phone}</span></div>
+          <div class="field"><span class="label">Date of Birth:</span> <span>${selectedPatient.dateOfBirth}</span></div>
+          <div class="field"><span class="label">Address:</span> <span>${selectedPatient.address || "N/A"}</span></div>
+          <div class="field"><span class="label">Insurance:</span> <span>${selectedPatient.insurance || "N/A"}</span></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Chief Complaint</div>
+          <p>${selectedPatient.problem || "N/A"}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Eye Prescription</div>
+          <pre>${prescriptionData}</pre>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Clinical Notes</div>
+          <p>${selectedPatient.notes || "N/A"}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 100);
+  };
+
   return (
     <Layout>
       <div className="space-y-8">
