@@ -65,15 +65,15 @@ export async function addPatient(patientData: PatientData): Promise<string> {
  */
 export async function getAllPatients(): Promise<PatientData[]> {
   try {
-    // Create a promise that rejects after 10 seconds
-    const timeoutPromise = new Promise((_, reject) =>
+    const docsPromise = getDocs(collection(db, PATIENTS_COLLECTION));
+
+    // Create a promise that rejects after 15 seconds
+    const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(
         () => reject(new Error("Firestore request timeout")),
-        10000
+        15000
       )
     );
-
-    const docsPromise = getDocs(collection(db, PATIENTS_COLLECTION));
 
     const querySnapshot = await Promise.race([
       docsPromise,
@@ -85,11 +85,18 @@ export async function getAllPatients(): Promise<PatientData[]> {
       ...doc.data(),
     } as PatientData));
   } catch (error) {
-    if (error instanceof Error && error.message === "Firestore request timeout") {
-      console.error("Firestore request timed out");
-      throw new Error(
-        "Failed to load patients. Please check your internet connection and try again."
-      );
+    // Ignore AbortError - it means the component was unmounted
+    if (error instanceof Error) {
+      if (error.message.includes("AbortError") || error.message.includes("aborted")) {
+        console.debug("Request was cancelled - component likely unmounted");
+        return [];
+      }
+      if (error.message === "Firestore request timeout") {
+        console.error("Firestore request timed out");
+        throw new Error(
+          "Failed to load patients. Please check your internet connection and try again."
+        );
+      }
     }
     console.error("Error getting patients:", error);
     throw error;
