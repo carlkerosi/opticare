@@ -85,6 +85,65 @@ export default function Reports() {
 
   const stats = calculateStats();
 
+  // Handle exporting report
+  const handleExportReport = () => {
+    const csv = generateReportCSV();
+    downloadCSV(csv, `opticare-report-${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  // Generate CSV report
+  const generateReportCSV = () => {
+    const ageDistribution = getAgeDistribution();
+
+    const rows = [
+      ["OptiCare - Patient Report"],
+      [`Generated on: ${new Date().toLocaleString()}`],
+      [],
+      ["KEY METRICS"],
+      ["Metric", "Value"],
+      ["Total Patients", stats.totalPatients],
+      ["Average Age", stats.avgAge],
+      ["Patients with Refractive Error", stats.withRefractiveLens],
+      ["Patients with Astigmatism", stats.withAstigmatism],
+      ["Patients with Presbyopia", stats.withAddition],
+      [],
+      ["GENDER DISTRIBUTION"],
+      ["Gender", "Count", "Percentage"],
+      ["Male", stats.malePatients, stats.totalPatients > 0 ? `${Math.round((stats.malePatients / stats.totalPatients) * 100)}%` : "0%"],
+      ["Female", stats.femalePatients, stats.totalPatients > 0 ? `${Math.round((stats.femalePatients / stats.totalPatients) * 100)}%` : "0%"],
+      ["Other", stats.otherPatients, stats.totalPatients > 0 ? `${Math.round((stats.otherPatients / stats.totalPatients) * 100)}%` : "0%"],
+      [],
+      ["AGE DISTRIBUTION"],
+      ["Age Range", "Count"],
+      ["0-18", ageDistribution["0-18"]],
+      ["19-35", ageDistribution["19-35"]],
+      ["36-50", ageDistribution["36-50"]],
+      ["51-65", ageDistribution["51-65"]],
+      ["65+", ageDistribution["65+"]],
+      [],
+      ["CLINICAL CONDITIONS"],
+      ["Condition", "Count"],
+      ["Myopia/Sphere Error", stats.withRefractiveLens],
+      ["Astigmatism (Cylinder)", stats.withAstigmatism],
+      ["Presbyopia (Addition)", stats.withAddition],
+    ];
+
+    return rows.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+  };
+
+  // Download CSV file
+  const downloadCSV = (csv: string, filename: string) => {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Calculate age distribution
   const getAgeDistribution = () => {
     const ranges = {
