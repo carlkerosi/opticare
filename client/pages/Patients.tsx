@@ -12,8 +12,13 @@ export default function Patients() {
 
   useEffect(() => {
     let isMounted = true;
+    let requestInFlight = false;
 
     const fetchPatients = async () => {
+      // Prevent duplicate requests
+      if (requestInFlight) return;
+      requestInFlight = true;
+
       try {
         if (!isMounted) return;
         setLoading(true);
@@ -21,9 +26,15 @@ export default function Patients() {
         const data = await getAllPatients();
         if (isMounted) {
           setPatients(data);
+          setError(null);
         }
       } catch (err) {
         if (isMounted) {
+          // Gracefully handle AbortError
+          if (err instanceof Error && (err.message.includes("AbortError") || err.message.includes("aborted"))) {
+            console.debug("Patient fetch cancelled - component unmounted");
+            return;
+          }
           const errorMessage =
             err instanceof Error ? err.message : "Failed to load patients";
           setError(errorMessage);
@@ -33,14 +44,21 @@ export default function Patients() {
         if (isMounted) {
           setLoading(false);
         }
+        requestInFlight = false;
       }
     };
 
-    fetchPatients();
+    // Small delay to ensure component is mounted before fetching
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        fetchPatients();
+      }
+    }, 100);
 
     // Cleanup function to prevent state updates after unmount
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
   }, []);
 
