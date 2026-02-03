@@ -9,6 +9,8 @@ import {
   Eye,
   FileText,
   AlertCircle,
+  X,
+  Printer,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getPatientById, PatientData } from "@/services/patientService";
@@ -19,6 +21,25 @@ export default function PatientDetail() {
   const [patient, setPatient] = useState<PatientData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [appointmentData, setAppointmentData] = useState({
+    date: "",
+    time: "",
+    notes: "",
+  });
+  const [prescriptionData, setPrescriptionData] = useState({
+    rightSphere: "",
+    rightCylinder: "",
+    rightAxis: "",
+    rightAdd: "",
+    rightPD: "",
+    leftSphere: "",
+    leftCylinder: "",
+    leftAxis: "",
+    leftAdd: "",
+    leftPD: "",
+  });
 
   useEffect(() => {
     let isMounted = true;
