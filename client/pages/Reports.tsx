@@ -18,8 +18,13 @@ export default function Reports() {
 
   useEffect(() => {
     let isMounted = true;
+    let requestInFlight = false;
 
     const fetchPatients = async () => {
+      // Prevent duplicate requests
+      if (requestInFlight) return;
+      requestInFlight = true;
+
       try {
         if (!isMounted) return;
         const data = await getAllPatients();
@@ -27,17 +32,30 @@ export default function Reports() {
           setPatients(data);
         }
       } catch (err) {
+        // Gracefully handle AbortError
+        if (err instanceof Error && (err.message.includes("AbortError") || err.message.includes("aborted"))) {
+          console.debug("Report fetch cancelled - component unmounted");
+          return;
+        }
         console.error("Error fetching patients:", err);
       } finally {
         if (isMounted) {
           setLoading(false);
         }
+        requestInFlight = false;
       }
     };
 
-    fetchPatients();
+    // Small delay to ensure component is mounted before fetching
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        fetchPatients();
+      }
+    }, 100);
+
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
   }, []);
 
