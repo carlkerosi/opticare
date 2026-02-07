@@ -19,8 +19,14 @@ interface PatientFormData {
   // Chief Complaint
   problem: string;
 
-  // Patient History Records
-  patientHistoryRecords: HistoryRecord[];
+  // Patient History
+  patientHistory: {
+    pmHx: string;
+    poHx: string;
+    vdu: string;
+    strabismus: string;
+    npc: string;
+  };
 
   // Right Eye (OD)
   rightSphere: string;
