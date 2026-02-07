@@ -2,8 +2,7 @@ import { Layout } from "@/components/Layout";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, AlertCircle } from "lucide-react";
 import { useState } from "react";
-import { addPatient, HistoryRecord } from "@/services/patientService";
-import { PatientHistorySection } from "@/components/PatientHistorySection";
+import { addPatient } from "@/services/patientService";
 
 interface PatientFormData {
   // Personal Information
