@@ -12,16 +12,6 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-// Type definition for patient history records
-export interface HistoryRecord {
-  id: string;
-  space: string;
-  record: string;
-  date: string;
-  notes?: string;
-  createdAt?: Date;
-}
-
 // Type definition for patient data
 export interface PatientData {
   id?: string;
@@ -35,7 +25,13 @@ export interface PatientData {
   address: string;
   insurance: string;
   problem: string;
-  patientHistoryRecords?: HistoryRecord[];
+  patientHistory?: {
+    pmHx?: string;
+    poHx?: string;
+    vdu?: string;
+    strabismus?: string;
+    npc?: string;
+  };
   rightSphere: string;
   rightCylinder: string;
   rightAxis: string;
