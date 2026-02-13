@@ -13,13 +13,20 @@ import {
   Printer,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getPatientById, PatientData } from "@/services/patientService";
+import {
+  getPatientById,
+  updatePatient,
+  PatientData,
+} from "@/services/patientService";
+import { EditPatientForm } from "@/components/EditPatientForm";
 
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<PatientData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
@@ -28,6 +35,8 @@ export default function PatientDetail() {
     time: "",
     notes: "",
   });
+  const [editFormData, setEditFormData] = useState<PatientData | null>(null);
+
   const [prescriptionData, setPrescriptionData] = useState({
     rightSphere: "",
     rightCylinder: "",
@@ -197,6 +206,71 @@ export default function PatientDetail() {
     setTimeout(() => printWindow.print(), 250);
   };
 
+  // Handle edit toggle
+  const handleEditToggle = () => {
+    if (!isEditing && patient) {
+      setEditFormData({ ...patient });
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    if (editFormData) {
+      setEditFormData((prev) =>
+        prev
+          ? {
+              ...prev,
+              [name]: value,
+            }
+          : null,
+      );
+    }
+  };
+
+  const handleHistoryChange = (
+    field: keyof Required<PatientData>["patientHistory"],
+    value: string,
+  ) => {
+    if (editFormData) {
+      setEditFormData((prev) =>
+        prev
+          ? {
+              ...prev,
+              patientHistory: {
+                ...(prev.patientHistory || {}),
+                [field]: value,
+              },
+            }
+          : null,
+      );
+    }
+  };
+
+  const handleSave = async () => {
+    if (!id || !editFormData) return;
+
+    setSaveLoading(true);
+    setError(null);
+
+    try {
+      await updatePatient(id, editFormData);
+      setPatient(editFormData);
+      setIsEditing(false);
+      alert("Patient record updated successfully!");
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update patient record";
+      setError(errorMessage);
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   // Handle scheduling appointment
   const handleScheduleAppointment = () => {
     if (!appointmentData.date || !appointmentData.time) {
@@ -291,19 +365,37 @@ export default function PatientDetail() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => (isEditing ? setIsEditing(false) : navigate("/"))}
             className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
           >
             <ArrowLeft size={20} />
-            Back to Dashboard
+            {isEditing ? "Cancel Editing" : "Back to Dashboard"}
           </button>
-          <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-            <Edit size={18} />
-            Edit Patient
-          </button>
+          {!isEditing && (
+            <button
+              onClick={handleEditToggle}
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Edit size={18} />
+              Edit Patient
+            </button>
+          )}
         </div>
 
-        {/* Patient Header Card */}
+        {isEditing && editFormData && (
+          <EditPatientForm
+            formData={editFormData}
+            onChange={handleInputChange}
+            onHistoryChange={handleHistoryChange}
+            onSave={handleSave}
+            onCancel={() => setIsEditing(false)}
+            isLoading={saveLoading}
+          />
+        )}
+
+        {!isEditing && (
+          <div className="space-y-6">
+            {/* Patient Header Card */}
         <div className="bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 rounded-xl p-8">
           <div className="flex items-start justify-between">
             <div>
@@ -539,8 +631,10 @@ export default function PatientDetail() {
           </div>
         </div>
       </div>
+    )}
+  </div>
 
-      {/* Schedule Appointment Modal */}
+  {/* Schedule Appointment Modal */}
       {showScheduleModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-card rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
